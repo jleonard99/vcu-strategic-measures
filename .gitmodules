@@ -1,0 +1,6 @@
+[submodule "useful-make-macros"]
+	path = useful-make-macros
+	url = https://github.com/jleonard99/useful-make-macros
+[submodule "useful-vcu-macros"]
+	path = useful-vcu-macros
+	url = https://github.com/jleonard99/useful-vcu-macros
