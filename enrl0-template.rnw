@@ -1,0 +1,165 @@
+\documentclass[11pt]{article}
+\usepackage{default}
+
+<<label=setup,echo=FALSE>>=
+# add R setup code here.  
+if(!exists("build.file")) source( 'enrl0-vcu-201610.Rparams' ) 
+source( 'mylibs.R' )
+source( 'molten-utils2.R' )
+graphdev = "png"
+graphdpi = 600
+options(width=100)
+opts_chunk$set( echo=TRUE,results="markup",size="scriptsize",dev=graphdev,dpi=graphdpi,fig.height=3 )
+@
+
+\title{Working with the enrollment gold table}
+\author{John Leonard}
+
+\begin{document}
+
+% ===============================================================================================
+% Front matter
+% ===============================================================================================
+\maketitle
+
+\section{Load the CSV file}
+
+<<>>=
+input.file = params[['molten.enrl0.csv']]
+output.Rdata = params[['molten.enrl0.rdata']]
+dcsv = read.csv( input.file,header=T,stringsAsFactors=F)
+@
+
+\section{Remove table name from field names}
+
+<<echo=T>>=
+#names(dcsv) = gsub("enrl0_","",names(dcsv))
+@
+
+\section{Data transformations and cleaning}
+
+Convert day strings to dates
+
+<<>>=
+#dcsv$fct_date_of_applied    = as.Date(dcsv$fct_date_of_applied,'%d-%b-%y')
+@
+
+<<eval=FALSE>>=
+dcsv$fct_admit_category = factor(dcsv$fct_admit_category,levels=c(
+'Inc-FR',
+'Transfer',
+'RETP',
+'Dual degree',
+'GTREP',
+'Inc-MS',
+'Joint Enrollment-High School (UJ)',
+'Transient-Undergraduate (UX)',
+'Cross Enrolled (UC)',
+'Special Student-Non Degree (US)',
+'International Dual Enrollment (UL)',
+'Readmission-Undergraduate (RU)',
+'Move On When Ready (UM)',
+'COE-2 year College (US) (UN)',
+'AASU Partnership (UK)',
+'COE-2 year College (Intl) (UO)',
+'GTREP-GT Regional Engr Prog (GR)',
+'Readmission 2nd Undergraduate (R2)',
+'Readmission Special/Non Degree (RS)')
+)
+
+@
+
+<<eval=FALSE>>=
+dcsv$fct_gender_name = factor(dcsv$fct_gender_name,levels=c(
+  'Male (M)',
+  'Female (F)',
+  '(x)'
+  )
+)
+
+dcsv$fct_gender_name2 = factor(dcsv$fct_gender_name2,levels=c(
+  'Male (M)',
+  'Female (F)',
+  'Foreign-born',
+  '(x)'
+  )
+)
+
+@
+
+
+
+<<eval=FALSE>>=
+dcsv$fct_ethnic_name = factor(dcsv$fct_ethnic_name,levels=c(
+'White (W)',
+'Asian (Z)',
+'Black (B)',
+'Hispanic (H)',
+'Two or more (T)',
+'Native American (I)',
+'Polynesian (P)',
+'Unknown (U)',
+'(x)'
+)
+)
+
+dcsv$fct_ethnic_name2 = factor(dcsv$fct_ethnic_name2,levels=c(
+'White (W)',
+'Asian (Z)',
+'Black (B)',
+'Hispanic (H)',
+'Two or more (T)',
+'Native American (I)',
+'Polynesian (P)',
+'Unknown (U)',
+'Foreign-born',
+'(x)'
+)
+)
+
+
+@
+
+<<eval=FALSE>>=
+dcsv$fct_rescit_category  = factor(dcsv$fct_rescit_category,levels=c("GA-resident","US-resident","International"))
+dcsv$org_division_abbr = factor(dcsv$org_division_abbr,levels=c("ENGR","COS","COC","COB","IAC","ARCH"))
+dcsv$time_term_type = factor(dcsv$time_term_type,levels=c("Summer","Fall","Spring"))
+dcsv$fct_urm  = factor(dcsv$fct_urm,levels=c("URM","non-URM"))
+dcsv$fct_urm2 = factor(dcsv$fct_urm2,levels=c("URM","non-URM","nonResAlien"))
+@
+
+
+
+\section{Convert from flat CSV to molten/Rdata format}
+
+<<>>=
+#dmelt = melt(
+#  dcsv,
+#  id.vars=names(dcsv)[which(substr(names(dcsv),1,4) %in% c("time","fct_","org_"))],
+#  measure.vars=names(dcsv)[which(substr(names(dcsv),1,4) %in% c("moe_"))]
+#)
+dmelt = dcsv
+@
+
+
+\section{Save params and data to Rdata file}
+
+<<>>=
+molten.enrl0.params = params
+molten.enrl0 = dmelt
+@
+
+<<>>=
+#clip from here
+@
+
+\section{Save params and data to Rdata file}
+
+<<echo=T>>=
+save(molten.enrl0, molten.enrl0.params,file=output.Rdata )
+@
+
+
+
+\end{document}
+

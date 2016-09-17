@@ -1,0 +1,62 @@
+\documentclass[10pt,twoside,openright]{report}
+
+\usepackage{vcubrief}
+\usepackage{lipsum}
+
+\title{Demonstration cut sheet with header and footer}
+\author{John Leonard}
+
+
+
+<<echo=FALSE>>=
+
+orgabbr = "SOE"
+orgtype = "college"
+orgshortname = "Engineering"
+orglongname = "School of Engineering"
+
+
+# hard-code a date of snapshot to pull specific slices
+
+#date_of_snapshot = as.Date(date())
+
+day_of_snapshot = "9/6/2016"
+
+@
+
+\renewcommand{\orgtype}{\Sexpr{orgtype}}
+\renewcommand{\orgabbr}{\Sexpr{orgabbr}}
+\renewcommand{\orgshortname}{\Sexpr{orgshortname}}
+\renewcommand{\orglongname}{\Sexpr{orglongname}}
+%%\renewcommand{\asofday}{\Sexpr{day_of_snapshot}}
+
+% ===============================================================================================
+
+\begin{document}
+
+\chapter{First chapter}
+\lipsum[1-2]
+
+\section*{section without numbers}
+\lipsum[5-6]
+
+\section{section with numbers}
+\lipsum
+
+\section{section with numbers}
+\lipsum
+
+\chapter{Second chapter}
+\lipsum[1-2]
+
+\section*{section without numbers}
+\lipsum[5-6]
+
+\section{section with numbers}
+\lipsum
+
+\section{section with numbers}
+\lipsum
+
+\end{document}
+
