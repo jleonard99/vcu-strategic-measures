@@ -38,98 +38,110 @@ dcsv = read.csv( input.file,header=T,stringsAsFactors=F)
 
 \section{Data transformations and cleaning}
 
-Convert day strings to dates
+<<>>=
+#cat(paste(paste("'",unique(dcsv$fct_degree_level),"'",sep=""),collapse=",\n"))
+
+dcsv$fct_degree_level = factor(dcsv$fct_degree_level,levels=c(
+'Baccalaureate',
+'Master\'s',
+'Doctorate',
+'First Professional',
+'Non-degree Undergraduate',
+'Non-degree Graduate',
+'Post-baccalaureate Certificate',
+'Post-master\'s Certificate'
+)
+)
+
+
+@
 
 <<>>=
-#dcsv$fct_date_of_applied    = as.Date(dcsv$fct_date_of_applied,'%d-%b-%y')
-@
-
-<<eval=FALSE>>=
-dcsv$fct_admit_category = factor(dcsv$fct_admit_category,levels=c(
-'Inc-FR',
-'Transfer',
-'RETP',
-'Dual degree',
-'GTREP',
-'Inc-MS',
-'Joint Enrollment-High School (UJ)',
-'Transient-Undergraduate (UX)',
-'Cross Enrolled (UC)',
-'Special Student-Non Degree (US)',
-'International Dual Enrollment (UL)',
-'Readmission-Undergraduate (RU)',
-'Move On When Ready (UM)',
-'COE-2 year College (US) (UN)',
-'AASU Partnership (UK)',
-'COE-2 year College (Intl) (UO)',
-'GTREP-GT Regional Engr Prog (GR)',
-'Readmission 2nd Undergraduate (R2)',
-'Readmission Special/Non Degree (RS)')
+dcsv$fct_gender_desc[which(dcsv$fct_gender_desc=="")] = "(NR/missing)"
+dcsv$fct_gender_desc[which(dcsv$fct_gender_desc=="Not Reported")] = "(NR/missing)"
+#cat(paste(paste("'",unique(dcsv$fct_gender_desc),"'",sep=""),collapse=",\n"))
+dcsv$fct_gender_desc = factor(dcsv$fct_gender_desc,levels=c(
+'Male',
+'Female',
+'(NR/missing)'
 )
-
-@
-
-<<eval=FALSE>>=
-dcsv$fct_gender_name = factor(dcsv$fct_gender_name,levels=c(
-  'Male (M)',
-  'Female (F)',
-  '(x)'
-  )
-)
-
-dcsv$fct_gender_name2 = factor(dcsv$fct_gender_name2,levels=c(
-  'Male (M)',
-  'Female (F)',
-  'Foreign-born',
-  '(x)'
-  )
 )
 
 @
 
 
 
-<<eval=FALSE>>=
-dcsv$fct_ethnic_name = factor(dcsv$fct_ethnic_name,levels=c(
-'White (W)',
-'Asian (Z)',
-'Black (B)',
-'Hispanic (H)',
-'Two or more (T)',
-'Native American (I)',
-'Polynesian (P)',
-'Unknown (U)',
-'(x)'
+<<>>=
+dcsv$fct_schev_ethnicity_desc[which(dcsv$fct_schev_ethnicity_desc=="Black or African American")] = "Black/African American"
+dcsv$fct_schev_ethnicity_desc[which(dcsv$fct_schev_ethnicity_desc=="Hispanic")] = "Hispanic/Latino"
+dcsv$fct_schev_ethnicity_desc[which(dcsv$fct_schev_ethnicity_desc=="American Indian/Alaskan Native")] = "American Indian/Alaskan"
+dcsv$fct_schev_ethnicity_desc[which(dcsv$fct_schev_ethnicity_desc=="Asian or Pacific Islander")] = "Asian"
+dcsv$fct_schev_ethnicity_desc[which(dcsv$fct_schev_ethnicity_desc=="Unknown")] = "(Unknown/NS/missing)"
+dcsv$fct_schev_ethnicity_desc[which(dcsv$fct_schev_ethnicity_desc=="Unknown/Not Specified")] = "(Unknown/NS/missing)"
+dcsv$fct_schev_ethnicity_desc[which(dcsv$fct_schev_ethnicity_desc=="")] = "(Unknown/NS/missing)"
+
+
+#cat(paste(paste("'",unique(dcsv$fct_schev_ethnicity_desc),"'",sep=""),collapse=",\n"))
+dcsv$fct_schev_ethnicity_desc = factor(dcsv$fct_schev_ethnicity_desc,levels=c(
+'White',
+'Asian',
+'Black/African American',
+'Hispanic/Latino',
+'Two or More Races',
+'American Indian/Alaskan',
+'Hawaiian/Pacific Islande',
+'International',
+'(Unknown/NS/missing)'
 )
 )
 
-dcsv$fct_ethnic_name2 = factor(dcsv$fct_ethnic_name2,levels=c(
-'White (W)',
-'Asian (Z)',
-'Black (B)',
-'Hispanic (H)',
-'Two or more (T)',
-'Native American (I)',
-'Polynesian (P)',
-'Unknown (U)',
-'Foreign-born',
-'(x)'
-)
-)
 
 
 @
 
-<<eval=FALSE>>=
-dcsv$fct_rescit_category  = factor(dcsv$fct_rescit_category,levels=c("GA-resident","US-resident","International"))
-dcsv$org_division_abbr = factor(dcsv$org_division_abbr,levels=c("ENGR","COS","COC","COB","IAC","ARCH"))
-dcsv$time_term_type = factor(dcsv$time_term_type,levels=c("Summer","Fall","Spring"))
-dcsv$fct_urm  = factor(dcsv$fct_urm,levels=c("URM","non-URM"))
-dcsv$fct_urm2 = factor(dcsv$fct_urm2,levels=c("URM","non-URM","nonResAlien"))
+<<>>=
+#cat(paste(paste("'",unique(dcsv$fct_residency_desc),"'",sep=""),collapse=",\n"))
+dcsv$fct_residency_desc  = factor(dcsv$fct_residency_desc,levels=c("In-state Resident","Out-of-state Resident"))
+@
+
+<<>>=
+dcsv$fct_hybrid_classification = dcsv$fct_student_classification1
+dcsv$fct_hybrid_classification[which(dcsv$fct_degree_level %in% c("First Professional"))] = "First Prof"
+dcsv$fct_hybrid_classification[which(dcsv$fct_degree_level %in% c("Non-degree Graduate"))] = "Non-degree GR"
+dcsv$fct_hybrid_classification[which(dcsv$fct_degree_level %in% c("Non-degree Undergraduate"))] = "Non-degree UG"
+dcsv$fct_hybrid_classification[which(dcsv$fct_degree_level %in% c("Post-baccalaureate Certificate"))] = "Post-UG Cert"
+dcsv$fct_hybrid_classification[which(dcsv$fct_degree_level %in% c("Post-master's Certificate"))] = "Post-MS Cert"
+dcsv$fct_hybrid_classification[which(dcsv$fct_degree_level %in% c("Doctorate"))] = "Doctorate"
+dcsv$fct_hybrid_classification[which(dcsv$fct_degree_level %in% c("Master's"))] = "Masters"
+
+#cat(paste(paste("'",unique(dcsv$fct_hybrid_classification),"'",sep=""),collapse=",\n"))
+dcsv$fct_hybrid_classification  = factor(dcsv$fct_hybrid_classification,levels=c(
+'FR',
+'SO',
+'JR',
+'SR',
+'Masters',
+'Doctorate',
+'First Prof',
+'Non-degree UG',
+'Non-degree GR',
+'Post-UG Cert',
+'Post-MS Cert'
+)
+)
+
 @
 
 
+<<>>=
+dcsv$fct_hybrid_program1 = paste(dcsv$fct_degree1,dcsv$fct_major1,sep="-")
+dcsv$fct_hybrid_program_desc1 = paste(dcsv$fct_degree1,dcsv$fct_major_desc1,sep="-")
+#cat(paste(paste("'",unique(dcsv$fct_hybrid_classification),"'",sep=""),collapse=",\n"))
+#dcsv$fct_hybrid_program  = factor(dcsv$fct_hybrid_program,levels=c(
+#)
+#)
 
+@
 \section{Convert from flat CSV to molten/Rdata format}
 
 <<>>=

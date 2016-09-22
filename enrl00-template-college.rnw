@@ -18,7 +18,7 @@ default.tabcolsep = "4pt"
 default.table.font.size = "footnotesize"
 opts_chunk$set( echo=FALSE,results="asis",size=default.table.font.size,dev=graphdev,dpi=graphdpi,fig.height=2.5 )
 
-for (param in c("unit.abbr","unit.longname","unit.shortname","unit.type")){
+for (param in c("unit.abbr","unit.longname","unit.shortname","unit.type","unit.parent.longname")){
   eval(parse(text=paste(param," = params[['",param,"']]",sep="")))
 }
 
@@ -45,12 +45,13 @@ if(unit.type=="college"){
 \title{Enrollment measures and metrics}
 \author{VCU Engineering/John Leonard}
 
-\usepackage{\Sexpr{unit.type}-header}
+\usepackage{\Sexpr{orgtype}-header}
 \renewcommand{\orgtype}{\Sexpr{orgtype}}
 \renewcommand{\orgabbr}{\Sexpr{orgabbr}}
 \renewcommand{\orgshortname}{\Sexpr{orgshortname}}
 \renewcommand{\orglongname}{\Sexpr{orglongname}}
 \renewcommand{\orgparentlongname}{\Sexpr{orgparentlongname}}
+
 %%\renewcommand{\asofday}{\Sexpr{day_of_snapshot}}
 
 % ===============================================================================================
@@ -135,14 +136,14 @@ tableDump(tt,sort=F,commas=T,cleanNames=T,rename=F,
 
 @
 
-\chapter{Overall enrollment trends}
+\chapter{Enrollment trends by program}
 
 <<>>=
 # construct long and short versions. Combine TIDYR code (for plotting) with RESHAPE2 code (for reporting)
 
 tt_long = (molten.enrl0
- %>% select( fct_academic_period_desc, fct_college_desc1, fct_college1,moe_students_enrolled )
- %>% group_by( "VCU",fct_academic_period_desc, fct_college_desc1,fct_college1 )
+ %>% select( fct_academic_period_desc, fct_hybrid_program_desc1, fct_hybrid_program1, moe_students_enrolled )
+ %>% group_by( "VCU",fct_academic_period_desc, fct_hybrid_program_desc1,fct_hybrid_program1 )
  %>% summarise( moe_stu_enrl = sum(moe_students_enrolled))
  %>% group_by( `"VCU"`,fct_academic_period_desc )
  %>% mutate( moe_pct_enrl = moe_stu_enrl / sum(moe_stu_enrl) )
@@ -150,14 +151,14 @@ tt_long = (molten.enrl0
 names(tt_long)[1] = "VCU"
 
 tt_wide = dcast(
-  tt_long,
-  VCU+fct_college_desc1+fct_college1~fct_academic_period_desc,
+  molten.enrl0,
+  fct_college1+fct_hybrid_program_desc1+fct_hybrid_program1~fct_academic_period_desc,
   fun.aggregate=function(x){sum(x,na.rm=TRUE)},
-  value.var="moe_stu_enrl",
-  margins=c("VCU")
+  value.var="moe_students_enrolled",
+  margins="fct_college1"
 )
 tt_wide = tt_wide[,2:length(names(tt_wide))]
-names(tt_wide)[1:2] = c("Unit description","Abbr")
+names(tt_wide)[1:2] = c("Program","Abbr")
 tt_wide = tt_wide[c(order(tt_wide[1:(nrow(tt_wide)-1),ncol(tt_wide)],decreasing=TRUE),nrow(tt_wide)),]
 
 
@@ -174,12 +175,15 @@ tt_summary = (molten.enrl0
 gg_long = tt_long
 gg_long$fct_academic_period_desc = gsub("Fall ","F.",gg_long$fct_academic_period_desc)
 
-g = (ggplot(gg_long,aes(x=fct_academic_period_desc,y=moe_stu_enrl,group=fct_college1))
+maxy = ceiling(max(gg_long$moe_stu_enrl)/100)*100
+
+
+g = (ggplot(gg_long,aes(x=fct_academic_period_desc,y=moe_stu_enrl,group=fct_hybrid_program1))
      + geom_line()
      + geom_point(size=0.5)
-     + facet_wrap( ~fct_college_desc1,scales="free_y")
+     + facet_wrap( ~fct_hybrid_program_desc1,scales="free_y")
      + geom_hline(yintercept=0, alpha=0)
-     + geom_hline(yintercept=c(2000),alpha=0)
+     + geom_hline(yintercept=c(maxy),alpha=0)
      + xlab("Fall terms") + ylab("Enrollment (scales vary by unit)")
 #     + scale_y_continuous(limits=c(0,5000))
      + theme(
@@ -214,7 +218,7 @@ tableDump(tt_wide,sort=F,commas=T,cleanNames=T,rename=F,
   label=table.label,
   tabcolsep=default.tabcolsep,
   hline.after=all.rows,
-  notes ="Source: ODSMGR.VCU\\_SUMMARY\\_RESIDENCY"
+  notes ="Source: ODSMGR.VCU\\_SUMMARY\\_RESIDENCY with local recodes"
 )
 
 @

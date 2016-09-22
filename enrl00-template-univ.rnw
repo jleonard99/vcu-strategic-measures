@@ -26,7 +26,6 @@ orgabbr = unit.abbr
 orgtype = unit.type
 orgshortname = unit.shortname
 orglongname = unit.longname
-orgparentlongname = unit.parent.longname
 
 #date_of_snapshot = as.Date(date())
 
@@ -45,12 +44,11 @@ if(unit.type=="college"){
 \title{Enrollment measures and metrics}
 \author{VCU Engineering/John Leonard}
 
-\usepackage{\Sexpr{unit.type}-header}
+
 \renewcommand{\orgtype}{\Sexpr{orgtype}}
 \renewcommand{\orgabbr}{\Sexpr{orgabbr}}
 \renewcommand{\orgshortname}{\Sexpr{orgshortname}}
 \renewcommand{\orglongname}{\Sexpr{orglongname}}
-\renewcommand{\orgparentlongname}{\Sexpr{orgparentlongname}}
 %%\renewcommand{\asofday}{\Sexpr{day_of_snapshot}}
 
 % ===============================================================================================

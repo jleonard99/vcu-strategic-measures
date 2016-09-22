@@ -29,35 +29,53 @@ all-docs := molten-utils.R framed.sty .Rhistory
 clean.title = Clean temporary files
 clean:
 	@echo + Cleaning 
-	@-$(RM) *.tex *.aux *.log *.toc *.eps *.out Rplots.pdf 2>$(NULL)
+	@-$(RM) *.tex *.aux *.log *.toc *.eps *.out *.gz Rplots.pdf 2>$(NULL)
 	@-$(RM) *-002.pdf 2>$(NULL)
 	
 realclean.title = Clean all local files except expensive data files
 realclean: clean
 	@echo + Really cleaning
-	@-$(RM) *.pdf *.R *.Rparams *.Rdata *.sql *-*-*.rnw *.csv 2>$(NULL)
+	@-$(RM) *.pdf *.R *.Rparams *.Rdata *.sql *-*-2*.rnw *.csv 2>$(NULL)
 	
 baremetal.title = Clean everything but the sources files
 baremetal: realclean
 	@echo + Cleaning to baremetal
 	@-$(RM) -fR figure
-	
-mylibs.R : useful-make-macros/R/mylibs.rnw ; $(recipe-rnw-to-r)
-molten-utils2.R : useful-make-macros/R/molten-utils2.rnw ; $(recipe-rnw-to-r)
 
-	
+R_HELPERS := mylibs molten-utils2 report-utils2 tile-utils2
+$(foreach root,$(R_HELPERS),$(eval $(root).R : useful-make-macros/R/$(root).rnw ; $$(recipe-rnw-to-r)))
+
+
+# base student enrollment data
+
 enrl0.description = Enrollment data file - university by term
-enrl0-vcu-201610.rnw : enrl0-template.rnw ; $(recipe-template-to-rnw)
-enrl0-vcu-201610.sql : ; $(recipe-enrl-sql)
-enrl0-vcu-201610.csv : enrl0-vcu-201610.sql ; $(recipe-sql-to-csv-egrprod)
-enrl0-vcu-201610.Rparams : ; $(recipe-template-to-rparams-3)
-enrl0-vcu-201610.R : enrl0-vcu-201610.rnw ; $(recipe-rnw-to-r)
-enrl0-vcu-201610.Rdata : enrl0-vcu-201610.R enrl0-vcu-201610.Rparams enrl0-vcu-201610.csv \
+enrl0-VCU-201610.rnw : enrl0-template.rnw ; $(recipe-template-to-rnw)
+enrl0-VCU-201610.sql : ; $(recipe-enrl-sql)
+enrl0-VCU-201610.csv : enrl0-VCU-201610.sql ; $(recipe-sql-to-csv-egrprod)
+enrl0-VCU-201610.Rparams : ; $(recipe-template-to-rparams-3)
+enrl0-VCU-201610.R : enrl0-VCU-201610.rnw ; $(recipe-rnw-to-r)
+enrl0-VCU-201610.Rdata : enrl0-VCU-201610.R enrl0-VCU-201610.Rparams enrl0-VCU-201610.csv \
 	mylibs.R molten-utils2.R ; $(recipe-r-to-something)
 
 
-enrl00-vcu-201610.rnw : enrl00-template.rnw ; $(recipe-template-to-rnw)
-enrl00-vcu-201610.Rparams : ; $(recipe-template-to-rparams-3)
-enrl00-vcu-201610.tex : enrl00-vcu-201610.rnw enrl00-vcu-201610.Rparams \
-	enrl0-vcu-201610.Rdata ; $(recipe-rnw-to-tex)
-enrl00-vcu-201610.pdf : enrl00-vcu-201610.tex vcubrief.sty ; $(recipe-tex-to-pdf)
+# basic enrollment report, custom for university/college
+
+#enrl00-VCU-201610.rnw : enrl00-template-univ.rnw ; $(recipe-template-to-rnw)
+#enrl00-VCU-201610.Rparams : ; $(recipe-template-to-rparams-3)
+#enrl00-VCU-201610.tex : enrl00-VCU-201610.rnw enrl00-VCU-201610.Rparams \
+#	enrl0-VCU-201610.Rdata $(foreach root,$(R_HELPERS),$(root).R) ; $(recipe-rnw-to-tex)
+#enrl00-VCU-201610.pdf : enrl00-VCU-201610.tex vcubrief.sty ; $(recipe-tex-to-pdf)
+
+terms := 201610
+
+$(foreach term,$(terms),$(foreach unit,$(univs),$(eval enrl00-$(unit)-$(term).rnw : enrl00-template-univ.rnw ; $$(recipe-template-to-rnw))))
+$(foreach term,$(terms),$(foreach unit,$(colleges),$(eval enrl00-$(unit)-$(term).rnw : enrl00-template-college.rnw ; $$(recipe-template-to-rnw))))
+$(foreach term,$(terms),$(foreach unit,$(depts),$(eval enrl00-$(unit)-$(term).rnw : enrl00-template-college.rnw ; $$(recipe-template-to-rnw))))
+
+$(foreach term,$(terms),$(foreach unit,$(all.units),$(eval enrl00-$(unit)-$(term).Rparams : ; $$(recipe-template-to-rparams-3))))
+$(foreach term,$(terms),$(foreach unit,$(all.units),$(eval enrl00-$(unit)-$(term).tex : enrl00-$(unit)-$(term).rnw enrl00-$(unit)-$(term).Rparams \
+	enrl0-VCU-$(term).Rdata $(foreach root,$(R_HELPERS),$(root).R) ; $$(recipe-rnw-to-tex))))
+$(foreach term,$(terms),$(foreach unit,$(all.units),$(eval enrl00-$(unit)-$(term).pdf : enrl00-$(unit)-$(term).tex vcubrief.sty $($(unit)_unittype)-header.sty ; $$(recipe-tex-to-pdf))))
+
+x:
+	@echo $(all.units)

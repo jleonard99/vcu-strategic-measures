@@ -28,7 +28,7 @@ endef
 
 
 define recipe-template-to-rparams-3
-	@echo [local] Writing RParams file: $(@)
+	@echo [local] Writing RParams-3 file: $(@)
 	@$(REPORTER) wrap \
 	--no-wrap-in=$(word 1,$(subst -, ,$(subst ., ,$(@))))-template.r \
 	--no-wrap-in=$(firstword $(^)) \
@@ -42,6 +42,7 @@ define recipe-template-to-rparams-3
 	--wrap-before="params[['unit.longname']] = '$($(word 2,$(subst -, ,$(subst ., ,$(@))))_longname)'" \
 	--wrap-before="params[['unit.type']] = '$($(word 2,$(subst -, ,$(subst ., ,$(@))))_unittype)'" \
 	--wrap-before="params[['unit.parent']] = '$($(word 2,$(subst -, ,$(subst ., ,$(@))))_parent)'" \
+	--wrap-before="params[['unit.parent.longname']] = '$($($(word 2,$(subst -, ,$(subst ., ,$(@))))_parent)_longname)'" \
 	--wrap-before="# " \
 	--wrap-before="opts_chunk\$$set(fig.path='figure/$(firstword $(subst ., ,$(@)))-')" \
 	--wrap-before="# " \
