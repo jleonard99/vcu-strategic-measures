@@ -1,0 +1,248 @@
+\documentclass[10pt,twoside,openright]{report}
+
+\usepackage{vcubrief}
+\usepackage{lipsum}
+
+<<label=setup,echo=FALSE>>=
+# add R setup code here.  
+if(!exists("build.file")) source( 'satis02.Rparams' ) 
+source( 'mylibs.R' )
+source( 'molten-utils2.R' )
+source( 'report-utils2.R' )
+source( 'tile-utils2.R')
+graphdev = "png"
+graphdpi = 600
+options(width=140)
+
+default.tabcolsep = "4pt"
+default.table.font.size = "footnotesize"
+opts_chunk$set( echo=FALSE,results="asis",size=default.table.font.size,dev=graphdev,dpi=graphdpi,fig.height=3.0 )
+
+for (param in c("unit.abbr","unit.longname","unit.shortname","unit.type","unit.parent.longname","unit.parent")){
+  eval(parse(text=paste(param," = params[['",param,"']]",sep="")))
+}
+
+orgabbr = unit.abbr
+orgtype = unit.type
+orgshortname = unit.shortname
+orglongname = unit.longname
+orgparentlongname = unit.parent.longname
+
+
+#date_of_snapshot = as.Date(date())
+
+day_of_snapshot = "10/12/2016"
+
+#load(params$molten.enrl0.rdata)
+
+#if(unit.type=="college"){
+#  molten.enrl0 = subset(molten.enrl0,fct_college1==unit.abbr)
+#}
+
+dcsv = read.csv(file=params$satisfaction.csv,colClasses="character")
+
+names(dcsv) = gsub("\\.\\.","-",names(dcsv))
+names(dcsv) = trimws(gsub("\\."," ",names(dcsv)))
+
+
+
+dcsv[which(!(dcsv[,1] %in% c("1","2","3","4"))),1] = NA
+dcsv[which(dcsv[,1]=="1"),1] = "Tenured"
+dcsv[which(dcsv[,1]=="2"),1] = "Tenure-track"
+dcsv[which(dcsv[,1]=="3"),1] = "Term"
+dcsv[which(dcsv[,1]=="4"),1] = "A & P"
+dcsv[,1] = factor(dcsv[,1],levels=rev(c("Tenured","Tenure-track","Term","A & P")))
+
+dcsv[which(!(dcsv[,2] %in% c("1","2","3","4","5","6"))),2] = NA
+dcsv[which(dcsv[,2]=="1"),2] = "Deans Office"
+dcsv[which(dcsv[,2]=="2"),2] = "Biomedical"
+dcsv[which(dcsv[,2]=="3"),2] = "Chemical and Life Science"
+dcsv[which(dcsv[,2]=="4"),2] = "Computer Science"
+dcsv[which(dcsv[,2]=="5"),2] = "Electrical and Computer"
+dcsv[which(dcsv[,2]=="6"),2] = "Mechanical and Nuclear"
+dcsv[,2] = factor(dcsv[,2])
+
+for(i in c(3:ncol(dcsv))){
+  dcsv[which(!(dcsv[,i] %in% c("1","2","3","4","5"))),i] = NA
+  dcsv[which(dcsv[,i]=="1"),i] = "Strongly disagree"
+  dcsv[which(dcsv[,i]=="2"),i] = "Disagree"
+  dcsv[which(dcsv[,i]=="3"),i] = "Neutral"
+  dcsv[which(dcsv[,i]=="4"),i] = "Agree"
+  dcsv[which(dcsv[,i]=="5"),i] = "Strongly agree"
+  dcsv[,i] = factor(dcsv[,i],levels=c("Strongly disagree","Disagree","Neutral","Agree","Strongly agree"))
+}
+
+question3 = c(5,8,9,10,11,13,16)
+question3map4 = c(3,4,7,12,14,15)
+question4 = c(17:22)
+
+fig.number = 0
+
+@
+
+\title{Faculty satisfaction survey}
+\author{VCU Engineering/John Leonard}
+
+\usepackage{\Sexpr{unit.type}-header}
+\renewcommand{\orgtype}{\Sexpr{orgtype}}
+\renewcommand{\orgabbr}{\Sexpr{orgabbr}}
+\renewcommand{\orgshortname}{\Sexpr{orgshortname}}
+\renewcommand{\orglongname}{\Sexpr{orglongname}}
+\renewcommand{\orgparentlongname}{\Sexpr{orgparentlongname}}
+%%\renewcommand{\asofday}{\Sexpr{day_of_snapshot}}
+
+% ===============================================================================================
+
+\begin{document}
+
+\chapter{Question 3 - School-level statements}
+
+<<>>=
+
+fig.number = fig.number + 1
+
+dd = likert(dcsv[,question3])
+gg = plot(dd,include.center=TRUE)
+
+figure.file.name = paste(opts_chunk$get("fig.path"),"figure",sprintf("%03d",fig.number),".png",sep="")
+suppressMessages(ggsave(gg,filename=paste(figure.file.name,sep=""),device="png",height=3.5,width=7.0,units="in"))
+
+   cat("\\begin{figure}[ht]\n")
+   cat("\\centering\n")
+   cat("\\includegraphics[width=\\maxwidth]{",figure.file.name,"}\n",sep="")
+   cat("\\caption{",figure.file.name,"}\n",sep="")
+   cat("\\end{figure}\n\n")
+
+@
+
+
+\chapter{Question 4 - Department-level statements}
+
+<<>>=
+
+fig.number = fig.number + 1
+
+dd = likert(dcsv[,question4])
+gg = plot(dd,include.center=TRUE)
+
+figure.file.name = paste(opts_chunk$get("fig.path"),"figure",sprintf("%03d",fig.number),".png",sep="")
+suppressMessages(ggsave(gg,filename=paste(figure.file.name,sep=""),device="png",height=3.0,width=7.0,units="in"))
+
+   cat("\\begin{figure}[ht]\n")
+   cat("\\centering\n")
+   cat("\\includegraphics[width=\\maxwidth]{",figure.file.name,"}\n",sep="")
+   cat("\\caption{",figure.file.name,"}\n",sep="")
+   cat("\\end{figure}\n\n")
+
+@
+
+
+\chapter{Statements shared between Question 3 and Question 4}
+
+<<>>=
+
+fig.number = fig.number + 1
+
+dd = likert(dcsv[,question3map4])
+gg = plot(dd,include.center=TRUE)
+
+figure.file.name = paste(opts_chunk$get("fig.path"),"figure",sprintf("%03d",fig.number),".png",sep="")
+suppressMessages(ggsave(gg,filename=paste(figure.file.name,sep=""),device="png",height=3.0,width=7,units="in"))
+
+   cat("\\begin{figure}[ht]\n")
+   cat("\\centering\n")
+   cat("\\includegraphics[width=\\maxwidth]{",figure.file.name,"}\n",sep="")
+   cat("\\caption{",figure.file.name,"}\n",sep="")
+   cat("\\end{figure}\n\n")
+
+@
+
+
+<<>>=
+
+fig.number = fig.number + 1
+
+dd = likert(dcsv[,question4])
+gg = plot(dd,include.center=TRUE)
+
+figure.file.name = paste(opts_chunk$get("fig.path"),"figure",sprintf("%03d",fig.number),".png",sep="")
+suppressMessages(ggsave(gg,filename=paste(figure.file.name,sep=""),device="png",height=3.5,width=7.0,units="in"))
+
+   cat("\\begin{figure}[ht]\n")
+   cat("\\centering\n")
+   cat("\\includegraphics[width=\\maxwidth]{",figure.file.name,"}\n",sep="")
+   cat("\\caption{",figure.file.name,"}\n",sep="")
+   cat("\\end{figure}\n\n")
+
+@
+
+
+\chapter{Breakouts by faculty type}
+
+<<>>=
+
+for (x in sort(names(dcsv)[3:ncol(dcsv)])){
+
+  fig.number = fig.number + 1
+
+  dd = likert(dcsv[which(!is.na(dcsv[,1])),x,drop=FALSE],grouping=dcsv[which(!is.na(dcsv[,1])),1])
+  gg = plot(dd,include.center=TRUE,group.order=c("Tenured","Tenure-track","Term","A & P"))
+
+  figure.file.name = paste(opts_chunk$get("fig.path"),"figure",sprintf("%03d",fig.number),".png",sep="")
+   suppressMessages(ggsave(gg,filename=paste(figure.file.name,sep=""),device="png",height=3.25,width=7.5,units="in"))
+
+   cat("\\begin{figure}[ht]\n")
+   cat("\\centering\n")
+   cat("\\includegraphics[width=\\maxwidth]{",figure.file.name,"}\n",sep="")
+   cat("\\caption{",figure.file.name,"}\n",sep="")
+   cat("\\end{figure}\n\n")
+  
+  
+}
+
+
+@
+
+
+<<eval=FALSE>>=
+
+saved.dcsv = subset(dcsv,!is.na(dcsv[,2]))
+
+
+for(unit in sort(unique(saved.dcsv[,2]))){
+  
+dcsv = subset(saved.dcsv,subset=saved.dcsv[,2]==unit)
+names(dcsv) = paste(unit,"-",names(dcsv),sep="")
+
+cat("\\chapter{",unit,"}\n\n",sep="")
+  
+for (x in sort(names(dcsv)[3:ncol(dcsv)])){
+
+  fig.number = fig.number + 1
+
+  dd = likert(dcsv[which(!is.na(dcsv[,1])),x,drop=FALSE],grouping=dcsv[which(!is.na(dcsv[,1])),1])
+  gg = plot(dd,include.center=TRUE,group.order=c("Tenured","Tenure-track","Term","A & P"))
+
+  figure.file.name = paste(opts_chunk$get("fig.path"),"figure",sprintf("%03d",fig.number),".png",sep="")
+   suppressMessages(ggsave(gg,filename=paste(figure.file.name,sep=""),device="png",height=3.0,width=7,units="in"))
+
+   cat("\\begin{figure}[ht]\n")
+   cat("\\centering\n")
+   cat("\\includegraphics[width=\\maxwidth]{",figure.file.name,"}\n",sep="")
+   cat("\\caption{",figure.file.name,"}\n",sep="")
+   cat("\\end{figure}\n\n")
+  
+  
+}
+
+  
+}
+
+
+@
+
+\clearpage
+
+
+
+\end{document}

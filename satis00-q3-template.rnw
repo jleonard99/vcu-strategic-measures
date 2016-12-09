@@ -1,0 +1,106 @@
+\documentclass[10pt,twoside,openright]{report}
+
+\usepackage{vcubrief}
+\usepackage{lipsum}
+
+<<label=setup,echo=FALSE>>=
+# add R setup code here.  
+if(!exists("build.file")) source( 'satis00-q3.Rparams' ) 
+source( 'mylibs.R' )
+source( 'molten-utils2.R' )
+source( 'report-utils2.R' )
+source( 'tile-utils2.R')
+graphdev = "png"
+graphdpi = 600
+options(width=140)
+
+default.tabcolsep = "4pt"
+default.table.font.size = "footnotesize"
+opts_chunk$set( echo=FALSE,results="asis",size=default.table.font.size,dev=graphdev,dpi=graphdpi,fig.height=7.0 )
+
+for (param in c("unit.abbr","unit.longname","unit.shortname","unit.type","unit.parent.longname","unit.parent")){
+  eval(parse(text=paste(param," = params[['",param,"']]",sep="")))
+}
+
+orgabbr = unit.abbr
+orgtype = unit.type
+orgshortname = unit.shortname
+orglongname = unit.longname
+orgparentlongname = unit.parent.longname
+
+
+#date_of_snapshot = as.Date(date())
+
+day_of_snapshot = "10/12/2016"
+
+#load(params$molten.enrl0.rdata)
+
+#if(unit.type=="college"){
+#  molten.enrl0 = subset(molten.enrl0,fct_college1==unit.abbr)
+#}
+
+dcsv = read.csv(file="satis00-q3.csv")
+dcsv$Item = reverse.levels(factor(paste("Q",dcsv$question,"S",sprintf("%02d",dcsv$statement),sep="")))
+
+dcsv$Item = reverse.levels(factor(dcsv$statement_text))
+
+
+results = (dcsv
+  %>% mutate(n_resp = strongly_disagree + disagree + neutral + agree + strongly_agree,
+           sdisagree_pct = strongly_disagree / n_resp * 100,
+           disagree_pct = disagree / n_resp * 100,
+           neutral_pct = neutral / n_resp * 100,
+           agree_pct = agree / n_resp * 100,
+           sagree_pct = strongly_agree / n_resp * 100)
+  %>% select( Item,sdisagree_pct:sagree_pct)
+  %>% rename( `Strongly disagree` = sdisagree_pct,
+              `Disagree` = disagree_pct,
+              `Neutral` = neutral_pct,
+              `Agree` = agree_pct,
+              `Strongly agree` = sagree_pct
+              )
+)
+
+x = list(results=results,items=NULL,grouping=NULL,factors=NULL,nlevels=5,levels=c("Strong disagree","Disagree","Neutral","Agree","Strongly agree"))
+class(x) = "likert"
+
+@
+
+
+\title{Faculty satisfaction survey}
+\author{VCU Engineering/John Leonard}
+
+\usepackage{\Sexpr{unit.type}-header}
+\renewcommand{\orgtype}{\Sexpr{orgtype}}
+\renewcommand{\orgabbr}{\Sexpr{orgabbr}}
+\renewcommand{\orgshortname}{\Sexpr{orgshortname}}
+\renewcommand{\orglongname}{\Sexpr{orglongname}}
+\renewcommand{\orgparentlongname}{\Sexpr{orgparentlongname}}
+%%\renewcommand{\asofday}{\Sexpr{day_of_snapshot}}
+
+% ===============================================================================================
+
+\begin{document}
+
+\chapter{Question 3 - without neutrals}
+
+<<>>=
+likert.bar.plot(x,include.center=FALSE,ordered=TRUE)
+@
+
+This is a net-stacked bar for Likert data.  Neutral responses are dropped and statements are ordered in descending agreement.
+The numeric values on each row represent the sums of the Strongly-X and X, where X is disagree or agree.
+
+\chapter{Question 3 - including neutrals}
+
+<<>>=
+likert.bar.plot(x,include.center=TRUE,ordered=TRUE)
+@
+
+\chapter{Question 3 - including neutrals}
+
+<<>>=
+likert.bar.plot(x,include.center=TRUE,centered=FALSE,ordered=TRUE)
+@
+
+\end{document}

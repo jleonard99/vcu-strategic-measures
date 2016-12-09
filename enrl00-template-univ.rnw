@@ -18,7 +18,7 @@ default.tabcolsep = "4pt"
 default.table.font.size = "footnotesize"
 opts_chunk$set( echo=FALSE,results="asis",size=default.table.font.size,dev=graphdev,dpi=graphdpi,fig.height=2.5 )
 
-for (param in c("unit.abbr","unit.longname","unit.shortname","unit.type")){
+for (param in c("unit.abbr","unit.longname","unit.shortname","unit.type","unit.parent.longname")){
   eval(parse(text=paste(param," = params[['",param,"']]",sep="")))
 }
 
@@ -26,6 +26,7 @@ orgabbr = unit.abbr
 orgtype = unit.type
 orgshortname = unit.shortname
 orglongname = unit.longname
+orgparentlongname = unit.parent.longname
 
 #date_of_snapshot = as.Date(date())
 
@@ -44,12 +45,12 @@ if(unit.type=="college"){
 \title{Enrollment measures and metrics}
 \author{VCU Engineering/John Leonard}
 
-
+\usepackage{\Sexpr{orgtype}-header}
 \renewcommand{\orgtype}{\Sexpr{orgtype}}
 \renewcommand{\orgabbr}{\Sexpr{orgabbr}}
 \renewcommand{\orgshortname}{\Sexpr{orgshortname}}
 \renewcommand{\orglongname}{\Sexpr{orglongname}}
-%%\renewcommand{\asofday}{\Sexpr{day_of_snapshot}}
+\renewcommand{\orgparentlongname}{\Sexpr{orgparentlongname}}
 
 % ===============================================================================================
 

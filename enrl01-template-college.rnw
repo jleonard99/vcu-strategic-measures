@@ -5,7 +5,7 @@
 
 <<label=setup,echo=FALSE>>=
 # add R setup code here.  
-if(!exists("build.file")) source( 'enrl00-EG-201610.Rparams' ) 
+if(!exists("build.file")) source( 'enrl00-EG-201710.Rparams' ) 
 source( 'mylibs.R' )
 source( 'molten-utils2.R' )
 source( 'report-utils2.R' )
@@ -28,9 +28,9 @@ orgshortname = unit.shortname
 orglongname = unit.longname
 orgparentlongname = unit.parent.longname
 
-#date_of_snapshot = as.Date(date())
+date_of_snapshot = as.Date(date())
 
-day_of_snapshot = "9/6/2016"
+#day_of_snapshot = "9/6/2016"
 
 load(params$molten.enrl0.rdata)
 

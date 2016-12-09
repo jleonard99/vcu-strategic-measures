@@ -1,0 +1,1 @@
+﻿CREATE SYNONYM [dbo].[base_researchvp_ods_personnel] FOR [ods]..[RESEARCHVP].[ODS_PERSONNEL];

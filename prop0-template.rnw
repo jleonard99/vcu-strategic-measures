@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage{default}
+
+<<label=setup,echo=FALSE>>=
+# add R setup code here.  
+if(!exists("build.file")) source( 'prop0-VCU-FP201703.Rparams' ) 
+source( 'mylibs.R' )
+source( 'molten-utils2.R' )
+graphdev = "png"
+graphdpi = 600
+options(width=100)
+opts_chunk$set( echo=TRUE,results="markup",size="scriptsize",dev=graphdev,dpi=graphdpi,fig.height=3 )
+@
+
+\title{Working with the enrollment gold table}
+\author{John Leonard}
+
+\begin{document}
+
+% ===============================================================================================
+% Front matter
+% ===============================================================================================
+\maketitle
+
+\section{Load the CSV file}
+
+<<>>=
+input.file = params[['molten.prop0.csv']]
+output.Rdata = params[['molten.prop0.rdata']]
+dcsv = read.csv( input.file,header=T,stringsAsFactors=F)
+@
+
+\section{Remove table name from field names}
+
+<<echo=T>>=
+#names(dcsv) = gsub("enrl0_","",names(dcsv))
+@
+
+\section{Data transformations and cleaning}
+
+<<eval=FALSE>>=
+#cat(paste(paste("'",unique(dcsv$fct_degree_level),"'",sep=""),collapse=",\n"))
+
+dcsv$fct_degree_level = factor(dcsv$fct_degree_level,levels=c(
+'Baccalaureate',
+'Master\'s',
+'Doctorate',
+'First Professional',
+'Non-degree Undergraduate',
+'Non-degree Graduate',
+'Post-baccalaureate Certificate',
+'Post-master\'s Certificate'
+)
+)
+
+
+@
+
+
+<<>>=
+#dcsv$fct_hybrid_program1 = paste(dcsv$fct_degree1,dcsv$fct_major1,sep="-")
+#dcsv$fct_hybrid_program_desc1 = paste(dcsv$fct_degree1,dcsv$fct_major_desc1,sep="-")
+#cat(paste(paste("'",unique(dcsv$fct_hybrid_classification),"'",sep=""),collapse=",\n"))
+#dcsv$fct_hybrid_program  = factor(dcsv$fct_hybrid_program,levels=c(
+#)
+#)
+
+@
+\section{Convert from flat CSV to molten/Rdata format}
+
+<<>>=
+dmelt = melt(
+  dcsv,
+  id.vars=names(dcsv)[which(substr(names(dcsv),1,4) %in% c("time","fct_","org_"))],
+  measure.vars=names(dcsv)[which(substr(names(dcsv),1,4) %in% c("moe_"))]
+)
+#dmelt = dcsv
+@
+
+
+\section{Save params and data to Rdata file}
+
+<<>>=
+molten.prop0.params = params
+molten.prop0 = dmelt
+@
+
+<<>>=
+#clip from here
+@
+
+\section{Save params and data to Rdata file}
+
+<<echo=T>>=
+save(molten.prop0, molten.prop0.params,file=output.Rdata )
+@
+
+
+
+\end{document}
+

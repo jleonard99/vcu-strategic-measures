@@ -1,0 +1,116 @@
+\documentclass[10pt,twoside,openright]{report}
+
+\usepackage{vcubrief}
+\usepackage{lipsum}
+
+<<label=setup,echo=FALSE>>=
+# add R setup code here.  
+if(!exists("build.file")) source( 'satis01-q3.Rparams' ) 
+source( 'mylibs.R' )
+source( 'molten-utils2.R' )
+source( 'report-utils2.R' )
+source( 'tile-utils2.R')
+graphdev = "png"
+graphdpi = 600
+options(width=140)
+
+default.tabcolsep = "4pt"
+default.table.font.size = "footnotesize"
+opts_chunk$set( echo=FALSE,results="asis",size=default.table.font.size,dev=graphdev,dpi=graphdpi,fig.height=3.0 )
+
+for (param in c("unit.abbr","unit.longname","unit.shortname","unit.type","unit.parent.longname","unit.parent")){
+  eval(parse(text=paste(param," = params[['",param,"']]",sep="")))
+}
+
+orgabbr = unit.abbr
+orgtype = unit.type
+orgshortname = unit.shortname
+orglongname = unit.longname
+orgparentlongname = unit.parent.longname
+
+
+#date_of_snapshot = as.Date(date())
+
+day_of_snapshot = "10/12/2016"
+
+#load(params$molten.enrl0.rdata)
+
+#if(unit.type=="college"){
+#  molten.enrl0 = subset(molten.enrl0,fct_college1==unit.abbr)
+#}
+
+dcsv = read.csv(file=params$satisfaction.csv)
+
+dcsv2 = NULL
+for(x in sort(unique(dcsv$statementId))){
+  temp = dcsv[which(dcsv$statementId==x),]
+  results = data.frame(rep(x,4),rep(as.character(temp$statement_text[1]),4),names(temp)[4:7],t(temp[,4:7]))
+  row.names(results) = NULL
+  names(results) = c("statementId","statement_text","group","strongly_disagree","disagree","neutral","agree","strongly_agree","na")
+  if (is.null(dcsv2)) {
+    dcsv2 = results
+  } else {
+    dcsv2 = rbind(dcsv2,results)
+  }
+}
+
+
+results = (dcsv2
+  %>% mutate(n_resp = strongly_disagree + disagree + neutral + agree + strongly_agree,
+           sdisagree_pct = strongly_disagree / n_resp * 100,
+           disagree_pct = disagree / n_resp * 100,
+           neutral_pct = neutral / n_resp * 100,
+           agree_pct = agree / n_resp * 100,
+           sagree_pct = strongly_agree / n_resp * 100)
+  %>% select( statementId,statement_text,group,sdisagree_pct:sagree_pct)
+  %>% rename( `Strongly disagree` = sdisagree_pct,
+              `Disagree` = disagree_pct,
+              `Neutral` = neutral_pct,
+              `Agree` = agree_pct,
+              `Strongly agree` = sagree_pct
+              )
+)
+
+results$group = factor(results$group,levels=rev(c("Tenured.faculty","Tenure.track.faculty","Term.faculty","A...P.faculty")))
+
+@
+
+
+\title{Faculty satisfaction survey}
+\author{VCU Engineering/John Leonard}
+
+\usepackage{\Sexpr{unit.type}-header}
+\renewcommand{\orgtype}{\Sexpr{orgtype}}
+\renewcommand{\orgabbr}{\Sexpr{orgabbr}}
+\renewcommand{\orgshortname}{\Sexpr{orgshortname}}
+\renewcommand{\orglongname}{\Sexpr{orglongname}}
+\renewcommand{\orgparentlongname}{\Sexpr{orgparentlongname}}
+%%\renewcommand{\asofday}{\Sexpr{day_of_snapshot}}
+
+% ===============================================================================================
+
+\begin{document}
+
+\chapter{Question 3 - plots with neutrals}
+
+<<>>=
+for( number in sort(unique(results$statementId))){
+   statement_text = as.character(unique(results$statement_text[which(results$statementId==number)]))
+   cat("\\section{",statement_text,"}\n\n")
+   
+   temp = results %>% filter(statementId==number) %>% select(group,`Strongly disagree`:`Strongly agree`) %>% rename(Item = group)
+   x = list(results=temp,items=NULL,grouping=NULL,factors=NULL,nlevels=5,levels=c("Strong disagree","Disagree","Neutral","Agree","Strongly agree"))
+   class(x) = "likert"
+
+   figure.file.name = paste(opts_chunk$get("fig.path"),"figure",sprintf("%02d",number),".png",sep="")
+
+   gg = likert.bar.plot(x,include.center=TRUE,ordered=FALSE)
+   suppressMessages(ggsave(gg,filename=paste(figure.file.name,sep=""),device="png",height=3,width=7,units="in"))
+   cat("\\includegraphics[width=\\maxwidth]{",figure.file.name,"}\n\n",sep="")
+
+}
+
+@
+
+
+\end{document}
