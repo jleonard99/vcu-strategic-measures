@@ -144,7 +144,7 @@ define recipe-students0-college-xlsm
 	--title-40050="College and Programs by size" \
 	--source-table-40050=gold_registration_bio \
 	--factor-fields-40050=fct_college_desc1,student_level_desc1,fct_program_desc1 \
-	--filter-strings-40050="fct_college1='EG'" \
+	--filter-strings-40050="fct_college1='EG' and census_period=2" \
 	--pivot-field-40050=academic_period \
 	--pivot-values-40050=$(call arg.term.by.n.term.list,$(@),6) \
 	--measure-field-40050=moe_enrolled_cnt \
@@ -156,7 +156,7 @@ define recipe-students0-college-xlsm
 	--title-40051="College and Programs by size" \
 	--source-table-40051=gold_registration_bio \
 	--factor-fields-40051=fct_college_desc1,student_level_desc1,fct_program_desc1 \
-	--filter-strings-40051="fct_college1='EG'" \
+	--filter-strings-40051="fct_college1='EG' and census_period=2" \
 	--pivot-field-40051=academic_period \
 	--pivot-values-40051=$(call arg.term.by.n.term.list,$(@),6) \
 	--measure-field-40051=moe_enrolled_cnt \
@@ -168,7 +168,7 @@ define recipe-students0-college-xlsm
 	--title-40052="College, department and program over time" \
 	--source-table-40052=gold_registration_bio \
 	--factor-fields-40052=fct_college_desc1,fct_department1,fct_department_desc1,fct_degree_level1,fct_degree_level_desc1,fct_program1,fct_program_desc1 \
-	--filter-strings-40052="fct_college1='EG'" \
+	--filter-strings-40052="fct_college1='EG' and census_period=2" \
 	--pivot-field-40052=academic_period \
 	--pivot-values-40052=$(call arg.term.by.n.term.list,$(@),6) \
 	--measure-field-40052=moe_enrolled_cnt \
@@ -199,6 +199,7 @@ define recipe-students0-univ-xlsm
 	--title-40052="Colleges by " \
 	--source-table-40052=ex_registration_bio \
 	--factor-fields-40052=college_desc1 \
+	--filter-strings-40052="census_period=2" \
 	--pivot-field-40052=academic_period \
 	--pivot-values-40052=$(call arg.term.by.n.term.list,$(@),5) \
 	--measure-field-40052=moe_enrolled_cnt \
@@ -210,6 +211,7 @@ define recipe-students0-univ-xlsm
 	--title-40050="College and Departments by size" \
 	--source-table-40050=ex_registration_bio \
 	--factor-fields-40050=college_desc1,department_desc1 \
+	--filter-strings-40050="census_period=2" \
 	--pivot-field-40050=academic_period \
 	--pivot-values-40050=$(call arg.term.by.n.term.list,$(@),5) \
 	--measure-field-40050=moe_enrolled_cnt \
@@ -221,6 +223,7 @@ define recipe-students0-univ-xlsm
 	--title-40051="Departments across the university by size" \
 	--source-table-40051=ex_registration_bio \
 	--factor-fields-40051=college_desc1,department_desc1 \
+	--filter-strings-40051="census_period=2" \
 	--pivot-field-40051=academic_period \
 	--pivot-values-40051=$(call arg.term.by.n.term.list,$(@),5) \
 	--measure-field-40051=moe_enrolled_cnt \
@@ -232,6 +235,7 @@ define recipe-students0-univ-xlsm
 	--title-40053="Programs across the university by size" \
 	--source-table-40053=ex_registration_bio \
 	--factor-fields-40053=student_level_desc1,college_desc1,program_desc1 \
+	--filter-strings-40053="census_period=2" \
 	--pivot-field-40053=academic_period \
 	--pivot-values-40053=$(call arg.term.by.n.term.list,$(@),5) \
 	--measure-field-40053=moe_enrolled_cnt \
